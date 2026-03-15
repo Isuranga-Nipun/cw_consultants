@@ -1,0 +1,10 @@
+Flask-PyMongo==2.3.0
+Flask-WTF==1.1.1
+WTForms==3.0.1
+python-dotenv==1.0.0
+Pillow==10.0.0
+pytesseract==0.3.10
+opencv-python==4.8.0.74
+werkzeug==2.3.7
+APScheduler==3.10.4
+email-validator==2.0.0

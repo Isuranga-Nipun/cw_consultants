@@ -1,0 +1,651 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header with Profile Name -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">
+                <i class="fas fa-id-card me-2" style="color: #667eea;"></i>
+                Candidate Profile
+            </h2>
+            <p class="text-muted">
+                <i class="fas fa-user-circle me-1"></i>
+                {{ candidate.full_name }} |
+                <span class="badge bg-{{ 'success' if candidate.passport_status == 'Having' else 'warning' }}">
+                    {{ candidate.passport_status }}
+                </span>
+            </p>
+        </div>
+        <div>
+            <a href="{{ url_for('section2') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to List
+            </a>
+        </div>
+    </div>
+
+    <!-- Profile Header with First Photo as Profile Picture -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Profile Picture and Basic Info -->
+                        <div class="col-md-4 text-center">
+                            {% if candidate.photos and candidate.photos|length > 0 %}
+                                <div class="position-relative d-inline-block">
+                                    <img src="{{ url_for('static', filename=candidate.photos[0]) }}"
+                                         class="rounded-circle img-thumbnail shadow-lg"
+                                         style="width: 200px; height: 200px; object-fit: cover; border: 5px solid white; cursor: pointer;"
+                                         onclick="openImageModal('{{ url_for('static', filename=candidate.photos[0]) }}')"
+                                         alt="Profile Photo">
+                                    <span class="position-absolute bottom-0 end-0 badge bg-primary p-3 rounded-circle" style="transform: translate(-10px, -10px);">
+                                        <i class="fas fa-camera"></i>
+                                    </span>
+                                </div>
+                            {% else %}
+                                <div class="d-inline-block">
+                                    <i class="fas fa-user-circle fa-7x text-muted"></i>
+                                </div>
+                            {% endif %}
+
+                            <h3 class="fw-bold mt-3">{{ candidate.full_name }}</h3>
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-envelope me-1"></i>{{ candidate.email }}<br>
+                                <i class="fas fa-phone me-1"></i>{{ candidate.mobile_no }}
+                            </p>
+                            <div class="d-flex justify-content-center gap-2">
+                                <span class="badge bg-primary p-2">
+                                    <i class="fas fa-calendar me-1"></i>{{ candidate.age }} years
+                                </span>
+                                <span class="badge bg-info p-2">
+                                    <i class="fas fa-venus-mars me-1"></i>{{ candidate.gender }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Quick Stats -->
+                        <div class="col-md-8">
+                            <div class="row h-100 align-items-center">
+                                <div class="col-md-4 text-center">
+                                    <div class="card border-0 bg-transparent">
+                                        <div class="card-body">
+                                            <h1 class="text-primary">{{ candidate.photos|length }}</h1>
+                                            <small class="text-muted">Photos</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <div class="card border-0 bg-transparent">
+                                        <div class="card-body">
+                                            <h1 class="text-danger">{{ candidate.videos|length }}</h1>
+                                            <small class="text-muted">Videos</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <div class="card border-0 bg-transparent">
+                                        <div class="card-body">
+                                            <h1 class="text-success">
+                                                {% set doc_count = 0 %}
+                                                {% if candidate.documents.police_report == 'Having' %}{% set doc_count = doc_count + 1 %}{% endif %}
+                                                {% if candidate.documents.gs_report == 'Having' %}{% set doc_count = doc_count + 1 %}{% endif %}
+                                                {% if candidate.documents.birth_certificate == 'Having' %}{% set doc_count = doc_count + 1 %}{% endif %}
+                                                {{ doc_count }}
+                                            </h1>
+                                            <small class="text-muted">Documents</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Row - Personal Info, Passport & Visa, Payments -->
+    <div class="row">
+        <!-- Left Column - Personal Information -->
+        <div class="col-md-4">
+            <!-- Personal Information Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-user me-2"></i>Personal Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm table-borderless">
+                        <tr>
+                            <td width="40%"><strong>Full Name:</strong></td>
+                            <td>{{ candidate.full_name }}</td>
+                        </tr>
+                        {% if candidate.surname %}
+                        <tr>
+                            <td><strong>Surname:</strong></td>
+                            <td>{{ candidate.surname }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if candidate.other_names %}
+                        <tr>
+                            <td><strong>Other Names:</strong></td>
+                            <td>{{ candidate.other_names }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <td><strong>Address:</strong></td>
+                            <td>{{ candidate.address_line1 }}<br>{{ candidate.address_line2 }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Birthday:</strong></td>
+                            <td>{{ candidate.birthday }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Age:</strong></td>
+                            <td>{{ candidate.age }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Gender:</strong></td>
+                            <td>{{ candidate.gender }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Current Job:</strong></td>
+                            <td>{{ candidate.current_job or 'Not specified' }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Email:</strong></td>
+                            <td>{{ candidate.email }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Mobile:</strong></td>
+                            <td>{{ candidate.mobile_no }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>NIC No:</strong></td>
+                            <td>
+                                {{ candidate.nic_no }}
+                                {% if candidate.nic_format %}
+                                <br><small class="text-muted">{{ candidate.nic_format }}</small>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- NIC Photo -->
+                    {% if candidate.nic_photo %}
+                    <div class="mt-3">
+                        <h6 class="border-bottom pb-2">
+                            <i class="fas fa-id-card me-2 text-warning"></i>NIC Photo
+                        </h6>
+                        <img src="{{ url_for('static', filename=candidate.nic_photo) }}"
+                             class="img-fluid rounded shadow-sm"
+                             style="max-height: 150px; cursor: pointer;"
+                             onclick="openImageModal('{{ url_for('static', filename=candidate.nic_photo) }}')"
+                             alt="NIC">
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Middle Column - Passport & Visa Information -->
+        <div class="col-md-4">
+            <!-- Passport & Visa Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-passport me-2"></i>Passport & Visa</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm table-borderless">
+                        <tr>
+                            <td width="40%"><strong>Passport Status:</strong></td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if candidate.passport_status == 'Having' else 'warning' }}">
+                                    {{ candidate.passport_status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% if candidate.passport_no %}
+                        <tr>
+                            <td><strong>Passport ID:</strong></td>
+                            <td>{{ candidate.passport_no }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <td><strong>Job Title:</strong></td>
+                            <td>{{ candidate.job_title }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Visa Refusals:</strong></td>
+                            <td>
+                                <span class="badge bg-{{ 'danger' if candidate.visa_refusals else 'success' }}">
+                                    {{ 'Yes' if candidate.visa_refusals else 'No' }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% if candidate.visa_refusal_details %}
+                        <tr>
+                            <td colspan="2">
+                                <small class="text-muted">{{ candidate.visa_refusal_details }}</small>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </table>
+
+                    <!-- Passport Photo -->
+                    {% if candidate.passport_photo %}
+                    <div class="mt-3">
+                        <h6 class="border-bottom pb-2">
+                            <i class="fas fa-passport me-2 text-success"></i>Passport Photo
+                        </h6>
+                        <img src="{{ url_for('static', filename=candidate.passport_photo) }}"
+                             class="img-fluid rounded shadow-sm"
+                             style="max-height: 150px; cursor: pointer;"
+                             onclick="openImageModal('{{ url_for('static', filename=candidate.passport_photo) }}')"
+                             alt="Passport">
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Required Documents Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-file-alt me-2"></i>Required Documents</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Police Report
+                            <div>
+                                <span class="badge bg-{{ 'success' if candidate.documents.police_report == 'Having' else 'warning' }} me-2">
+                                    {{ candidate.documents.police_report }}
+                                </span>
+                                {% if candidate.documents.police_report_file %}
+                                <i class="fas fa-paperclip text-primary cursor-pointer" style="cursor: pointer; font-size: 1.2rem;"
+                                   onclick="openDocument('{{ url_for('static', filename=candidate.documents.police_report_file) }}')" title="View Document"></i>
+                                {% endif %}
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            GS Report
+                            <div>
+                                <span class="badge bg-{{ 'success' if candidate.documents.gs_report == 'Having' else 'warning' }} me-2">
+                                    {{ candidate.documents.gs_report }}
+                                </span>
+                                {% if candidate.documents.gs_report_file %}
+                                <i class="fas fa-paperclip text-primary cursor-pointer" style="cursor: pointer; font-size: 1.2rem;"
+                                   onclick="openDocument('{{ url_for('static', filename=candidate.documents.gs_report_file) }}')" title="View Document"></i>
+                                {% endif %}
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Birth Certificate
+                            <div>
+                                <span class="badge bg-{{ 'success' if candidate.documents.birth_certificate == 'Having' else 'warning' }} me-2">
+                                    {{ candidate.documents.birth_certificate }}
+                                </span>
+                                {% if candidate.documents.birth_certificate_file %}
+                                <i class="fas fa-paperclip text-primary cursor-pointer" style="cursor: pointer; font-size: 1.2rem;"
+                                   onclick="openDocument('{{ url_for('static', filename=candidate.documents.birth_certificate_file) }}')" title="View Document"></i>
+                                {% endif %}
+                            </div>
+                        </li>
+                        {% if candidate.documents.other %}
+                        <li class="list-group-item">
+                            <strong>Other:</strong> {{ candidate.documents.other }}
+                            {% if candidate.documents.other_file %}
+                            <i class="fas fa-paperclip text-primary ms-2 cursor-pointer" style="cursor: pointer; font-size: 1.2rem;"
+                               onclick="openDocument('{{ url_for('static', filename=candidate.documents.other_file) }}')" title="View Document"></i>
+                            {% endif %}
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Pending Items Card -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-white">
+                    <h5><i class="fas fa-exclamation-triangle me-2"></i>Pending Items</h5>
+                </div>
+                <div class="card-body">
+                    {% if candidate.pending_documents and candidate.pending_documents|length > 0 %}
+                    <h6>Pending Documents:</h6>
+                    <ul class="list-group mb-3">
+                        {% for doc in candidate.pending_documents %}
+                        <li class="list-group-item list-group-item-warning">
+                            <i class="fas fa-clock me-2"></i>{{ doc }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+
+                    {% if candidate.pending_payment and candidate.pending_payment > 0 %}
+                    <h6>Pending Payment:</h6>
+                    <p class="text-danger h4">LKR {{ "{:,.0f}".format(candidate.pending_payment) }}</p>
+                    {% endif %}
+
+                    {% if not candidate.pending_documents and (not candidate.pending_payment or candidate.pending_payment == 0) %}
+                    <div class="text-center text-success">
+                        <i class="fas fa-check-circle fa-3x mb-3"></i>
+                        <p>No pending items!</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Payments and Follow-ups -->
+        <div class="col-md-4">
+            <!-- Payment Details Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-credit-card me-2"></i>Payment Details</h5>
+                </div>
+                <div class="card-body">
+                    <h3 class="text-center">LKR {{ "{:,.0f}".format(candidate.total_payment) }}</h3>
+                    <p class="text-center text-muted">Total Payment</p>
+
+                    {% if candidate.total_payment and candidate.total_payment > 0 %}
+                    <div class="progress mb-3" style="height: 10px;">
+                        {% set paid = candidate.total_payment - candidate.remaining_payment %}
+                        {% set percentage = (paid / candidate.total_payment * 100) if candidate.total_payment > 0 else 0 %}
+                        <div class="progress-bar bg-success" style="width: {{ percentage }}%">
+                            {{ "%.1f"|format(percentage) }}%
+                        </div>
+                    </div>
+
+                    <div class="row text-center mb-3">
+                        <div class="col-6">
+                            <div class="border-end">
+                                <small class="text-muted">Paid</small>
+                                <h5 class="text-success">LKR {{ "{:,.0f}".format(paid) }}</h5>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Remaining</small>
+                            <h5 class="text-danger">LKR {{ "{:,.0f}".format(candidate.remaining_payment) }}</h5>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h6>Payment History</h6>
+                    <div class="list-group mb-3" style="max-height: 200px; overflow-y: auto;">
+                        {% if candidate.payments and candidate.payments|length > 0 %}
+                            {% for payment in candidate.payments %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ payment.type }}</strong>
+                                        {% if payment.description %}
+                                        <small class="d-block text-muted">{{ payment.description }}</small>
+                                        {% endif %}
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar me-1"></i>{{ payment.date.strftime('%d/%m/%Y') if payment.date else 'N/A' }}
+                                        </small>
+                                    </div>
+                                    <span class="badge bg-success">LKR {{ "{:,.0f}".format(payment.amount) }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted text-center py-3">No payments yet</p>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3">No payment information</p>
+                    {% endif %}
+
+                    <!-- Add Payment Form -->
+                    <form action="{{ url_for('add_payment', candidate_id=candidate._id) }}" method="POST" class="mt-3">
+                        <h6 class="mb-3">Add New Payment</h6>
+                        <div class="mb-2">
+                            <input type="text" name="payment_type" class="form-control form-control-sm" placeholder="Payment Type" required>
+                        </div>
+                        <div class="mb-2">
+                            <input type="number" name="amount" class="form-control form-control-sm" placeholder="Amount (LKR)" step="0.01" required>
+                        </div>
+                        <div class="mb-2">
+                            <input type="text" name="description" class="form-control form-control-sm" placeholder="Description (Optional)">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm w-100">
+                            <i class="fas fa-plus-circle me-1"></i> Add Payment
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Follow-ups Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-calendar-check me-2"></i>Follow-ups</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group mb-3" style="max-height: 250px; overflow-y: auto;">
+                        {% if candidate.follow_ups and candidate.follow_ups|length > 0 %}
+                            {% for fu in candidate.follow_ups %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong>{{ fu.follow_up_type }}</strong>
+                                        <small class="d-block text-muted">
+                                            <i class="fas fa-clock me-1"></i>
+                                            {% if fu.follow_up_date %}
+                                                {% if fu.follow_up_date is string %}
+                                                    {{ fu.follow_up_date }}
+                                                {% else %}
+                                                    {{ fu.follow_up_date.strftime('%d/%m/%Y %H:%M') }}
+                                                {% endif %}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </small>
+                                        {% if fu.notes %}
+                                        <p class="mb-0 small text-muted mt-1">
+                                            <i class="fas fa-comment me-1"></i>{{ fu.notes }}
+                                        </p>
+                                        {% endif %}
+                                    </div>
+                                    <span class="badge bg-{{ 'success' if fu.status == 'Completed' else 'warning' }}">
+                                        {{ fu.status }}
+                                    </span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted text-center py-3">No follow-ups scheduled</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Add Follow-up Form -->
+                    <form action="{{ url_for('add_followup', candidate_id=candidate._id) }}" method="POST">
+                        <h6 class="mb-3">Schedule Follow-up</h6>
+                        <div class="mb-2">
+                            <input type="datetime-local" name="follow_up_date" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="mb-2">
+                            <select name="follow_up_type" class="form-select form-select-sm" required>
+                                <option value="">Select Type</option>
+                                <option value="Call">Call</option>
+                                <option value="Email">Email</option>
+                                <option value="Meeting">Meeting</option>
+                                <option value="Document Check">Document Check</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <textarea name="notes" class="form-control form-control-sm" placeholder="Notes" rows="2"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm w-100">
+                            <i class="fas fa-plus-circle me-1"></i> Add Follow-up
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Photos Gallery - Moved to bottom -->
+    {% if candidate.photos and candidate.photos|length > 1 %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-images me-2 text-primary"></i>All Photos ({{ candidate.photos|length - 1 }})</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for photo in candidate.photos[1:] %}
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="position-relative">
+                                <img src="{{ url_for('static', filename=photo) }}"
+                                     class="img-fluid rounded shadow-sm"
+                                     style="height: 150px; width: 100%; object-fit: cover; cursor: pointer;"
+                                     onclick="openImageModal('{{ url_for('static', filename=photo) }}')"
+                                     alt="Candidate Photo">
+                                <span class="position-absolute top-0 end-0 badge bg-primary m-2">
+                                    <i class="fas fa-camera"></i>
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Videos Gallery - FIXED -->
+{% if candidate.videos and candidate.videos|length > 0 %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-video me-2 text-danger"></i>Videos ({{ candidate.videos|length }})</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for video in candidate.videos %}
+                    <div class="col-md-4 col-6 mb-3">
+                        <div class="position-relative">
+                            <video src="{{ url_for('static', filename=video) }}"
+                                   class="img-fluid rounded shadow-sm"
+                                   style="height: 150px; width: 100%; object-fit: cover; cursor: pointer;"
+                                   onclick="openVideoModal('{{ url_for('static', filename=video) }}')"
+                                   controls>
+                                Your browser does not support the video tag.
+                            </video>
+                            <span class="position-absolute top-0 end-0 badge bg-danger m-2">
+                                <i class="fas fa-play"></i>
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-video me-2 text-danger"></i>Videos</h5>
+            </div>
+            <div class="card-body text-center py-4">
+                <i class="fas fa-video-slash fa-3x text-muted mb-3"></i>
+                <p class="text-muted">No videos uploaded for this candidate.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body p-0">
+                <img src="" id="modalImage" class="img-fluid w-100" alt="Full size image">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Video Modal -->
+<div class="modal fade" id="videoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body p-0">
+                <video src="" id="modalVideo" class="img-fluid w-100" controls></video>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Document Modal -->
+<div class="modal fade" id="documentModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Document Viewer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0" style="height: 80vh;">
+                <iframe id="documentFrame" style="width: 100%; height: 100%; border: none;"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Open image in modal
+    function openImageModal(imageSrc) {
+        document.getElementById('modalImage').src = imageSrc;
+        new bootstrap.Modal(document.getElementById('imageModal')).show();
+    }
+
+    // Open video in modal
+    function openVideoModal(videoSrc) {
+        const video = document.getElementById('modalVideo');
+        video.src = videoSrc;
+        const modal = new bootstrap.Modal(document.getElementById('videoModal'));
+        modal.show();
+
+        // Stop video when modal is closed
+        document.getElementById('videoModal').addEventListener('hidden.bs.modal', function () {
+            video.pause();
+            video.src = '';
+        });
+    }
+
+    // Open document in modal
+    function openDocument(docPath) {
+        const extension = docPath.split('.').pop().toLowerCase();
+        const iframe = document.getElementById('documentFrame');
+
+        if (extension === 'pdf') {
+            iframe.src = docPath;
+        } else if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(extension)) {
+            iframe.src = docPath;
+        } else {
+            // For other documents, open in new tab
+            window.open(docPath, '_blank');
+            return;
+        }
+
+        new bootstrap.Modal(document.getElementById('documentModal')).show();
+    }
+</script>
+{% endblock %}

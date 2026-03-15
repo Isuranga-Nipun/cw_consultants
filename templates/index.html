@@ -1,0 +1,771 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header with Animation -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="animate__animated animate__fadeInLeft">
+            <i class="fas fa-tachometer-alt me-2" style="color: #667eea;"></i>
+            Dashboard
+        </h2>
+        <div class="animate__animated animate__fadeInRight">
+            <span class="badge bg-primary p-3">
+                <i class="fas fa-calendar-alt me-2"></i>{{ now.strftime('%d %B, %Y') }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Statistics Cards - Clickable -->
+    <div class="row mb-4">
+        <!-- Total Candidates Card -->
+        <div class="col-md-3 mb-3">
+            <div class="stat-card" style="background: linear-gradient(135deg, #2193b0, #6dd5ed); cursor: pointer;"
+                 data-bs-toggle="modal" data-bs-target="#candidatesModal">
+                <h3>{{ total_candidates }}</h3>
+                <p>Total Candidates</p>
+                <i class="fas fa-users stat-icon"></i>
+                <div class="mt-2">
+                    <small><i class="fas fa-arrow-right me-1"></i>Click for details</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Payments Card -->
+        <div class="col-md-3 mb-3">
+            <div class="stat-card" style="background: linear-gradient(135deg, #ee0979, #ff6a00); cursor: pointer;"
+                 data-bs-toggle="modal" data-bs-target="#paymentsModal">
+                <h3>LKR {{ "{:,.0f}".format(total_payments) }}</h3>
+                <p>Total Payments</p>
+                <i class="fas fa-money-bill-wave stat-icon"></i>
+                <div class="mt-2">
+                    <small><i class="fas fa-arrow-right me-1"></i>Click for details</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Remaining Payments Card -->
+        <div class="col-md-3 mb-3">
+            <div class="stat-card" style="background: linear-gradient(135deg, #11998e, #38ef7d); cursor: pointer;"
+                 data-bs-toggle="modal" data-bs-target="#remainingModal">
+                <h3>LKR {{ "{:,.0f}".format(total_remaining) }}</h3>
+                <p>Remaining Payments</p>
+                <i class="fas fa-clock stat-icon"></i>
+                <div class="mt-2">
+                    <small><i class="fas fa-arrow-right me-1"></i>Click for details</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Documents Card -->
+        <div class="col-md-3 mb-3">
+            <div class="stat-card" style="background: linear-gradient(135deg, #8e2de2, #4a00e0); cursor: pointer;"
+                 data-bs-toggle="modal" data-bs-target="#documentsModal">
+                <h3>{{ pending_docs }}</h3>
+                <p>Pending Documents</p>
+                <i class="fas fa-file-alt stat-icon"></i>
+                <div class="mt-2">
+                    <small><i class="fas fa-arrow-right me-1"></i>Click for details</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Row - Two videos side by side -->
+    <div class="row mb-4">
+        <!-- Romania Video Section (YouTube) -->
+        <div class="col-md-6 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5><i class="fab fa-youtube me-2 text-danger"></i>Discover Romania</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div id="videoContainer" class="ratio ratio-16x9" style="border-radius: 0 0 20px 20px;">
+                        <iframe id="youtubeFrame"
+                                src="https://www.youtube.com/embed/IK8EDXB5jVc?autoplay=0&vq=2160p"
+                                title="Romania Video"
+                                allowfullscreen
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
+                        </iframe>
+                    </div>
+                    <div class="p-3 d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-info-circle me-1 text-muted"></i>
+                            <span class="text-muted">Experience the beauty of Romania</span>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="fab fa-youtube me-1"></i> Quality
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#" onclick="changeVideoQuality('2160p'); return false;">4K (2160p)</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="changeVideoQuality('1440p'); return false;">1440p</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="changeVideoQuality('1080p'); return false;">1080p</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="changeVideoQuality('720p'); return false;">720p</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Local Video Section -->
+        <div class="col-md-6 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5><i class="fas fa-video me-2 text-primary"></i>Camith Weerasinghe</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="ratio ratio-16x9" style="border-radius: 0 0 20px 20px; background: #000;">
+                        <video controls>
+                            <source src="{{ url_for('static', filename='clips/Romania in 4K - Incredible Scenes & Hidden Gems.mp4') }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    <div class="p-3">
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-map-marker-alt me-1 text-primary"></i>
+                            Explore Romania's hidden gems in stunning 4K
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Charts Row -->
+    <div class="row mb-4">
+        <!-- Success Rate Chart -->
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5><i class="fas fa-check-circle me-2 text-success"></i>Success Rate</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="successRateChart" style="height: 250px;"></canvas>
+                    <div class="text-center mt-3">
+                        {% set total_candidates_with_docs = 0 %}
+                        {% for candidate in all_candidates %}
+                            {% if candidate.documents.police_report == 'Having' or
+                                  candidate.documents.gs_report == 'Having' or
+                                  candidate.documents.birth_certificate == 'Having' %}
+                                {% set total_candidates_with_docs = total_candidates_with_docs + 1 %}
+                            {% endif %}
+                        {% endfor %}
+                        {% set success_rate = (total_candidates_with_docs / total_candidates * 100) if total_candidates > 0 else 0 %}
+                        <h3 class="text-success">{{ "%.1f"|format(success_rate) }}%</h3>
+                        <p class="text-muted">Candidates with complete documents</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Payout Chart -->
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-line me-2 text-primary"></i>Monthly Payout</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyPayoutChart" style="height: 250px;"></canvas>
+                    <div class="text-center mt-3">
+                        <h3 class="text-primary">LKR {{ "{:,.0f}".format(total_payments - total_remaining) }}</h3>
+                        <p class="text-muted">Total collected so far</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Document Completion Chart -->
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5><i class="fas fa-file-alt me-2 text-warning"></i>Document Completion</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="documentCompletionChart" style="height: 250px;"></canvas>
+                    <div class="text-center mt-3">
+                        <div class="row">
+                            <div class="col-4">
+                                <small class="text-muted">Police</small>
+                                <h6 class="{% if total_candidates - document_stats.police_report_pending == total_candidates %}text-success{% endif %}">
+                                    {{ total_candidates - document_stats.police_report_pending }}/{{ total_candidates }}
+                                </h6>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted">GS</small>
+                                <h6 class="{% if total_candidates - document_stats.gs_report_pending == total_candidates %}text-success{% endif %}">
+                                    {{ total_candidates - document_stats.gs_report_pending }}/{{ total_candidates }}
+                                </h6>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted">Birth</small>
+                                <h6 class="{% if total_candidates - document_stats.birth_certificate_pending == total_candidates %}text-success{% endif %}">
+                                    {{ total_candidates - document_stats.birth_certificate_pending }}/{{ total_candidates }}
+                                </h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Government Site and Monthly Registrations Row -->
+    <div class="row mb-4">
+        <!-- Romanian Government Site Section - FIXED -->
+        <div class="col-md-6 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5><i class="fas fa-landmark me-2" style="color: #667eea;"></i>Romanian Government</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <img src="https://www.gov.ro/themes/gov/images/logo.png" alt="Romanian Government" class="img-fluid mb-3" style="max-height: 60px;">
+                        <h6 class="fw-bold">Guvernul României</h6>
+                    </div>
+
+                    <!-- Government Site Preview - Using direct link with snapshot -->
+                    <div class="gov-preview-container" style="height: 300px; border-radius: 10px; overflow: hidden; position: relative; background: linear-gradient(135deg, #f5f7fa 0%, #e9ecf2 100%);">
+                        <div style="width: 100%; height: 100%; position: relative;">
+                            <!-- Government site snapshot image -->
+                            <img src="https://www.gov.ro/themes/gov/images/logo.png"
+                                 style="position: absolute; top: 20px; left: 20px; width: 60px; opacity: 0.3;">
+                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; width: 100%; padding: 20px;">
+                                <i class="fas fa-globe fa-4x text-primary mb-3"></i>
+                                <h5>www.gov.ro</h5>
+                                <p class="text-muted">Official website of the Romanian Government</p>
+                                <div class="mt-3">
+                                    <a href="https://www.gov.ro/en" target="_blank" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-external-link-alt me-2"></i> Visit Official Website
+                                    </a>
+                                </div>
+                                <p class="mt-3 small text-muted">
+                                    <i class="fas fa-lock me-1"></i>
+                                    Secure connection • Official government domain
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-success">Verified Source</span>
+                            <small class="text-muted ms-2">romania.gov</small>
+                        </div>
+                        <a href="https://www.gov.ro/en" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-external-link-alt me-1"></i> Open in New Tab
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Registrations Chart - SEPARATE CARD -->
+        <div class="col-md-6 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5><i class="fas fa-calendar-alt me-2" style="color: #667eea;"></i>Monthly Registrations</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyRegistrationsChart" style="height: 300px; width: 100%;"></canvas>
+                    <div class="text-center mt-3">
+                        <div class="row">
+                            <div class="col-4">
+                                <small class="text-muted">Total</small>
+                                <h4>{{ total_candidates }}</h4>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted">This Month</small>
+                                <h4>{{ monthlyRegData[now.month-1] if monthlyRegData is defined else 0 }}</h4>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted">Avg/Month</small>
+                                <h4>{{ (total_candidates / 12)|round|int if total_candidates > 0 else 0 }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Candidates and Follow-ups Row -->
+    <div class="row">
+        <!-- Recent Candidates Card -->
+        <div class="col-md-6 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5><i class="fas fa-users me-2" style="color: #667eea;"></i>Recent Candidates</h5>
+                </div>
+                <div class="card-body" style="height: 400px; overflow-y: auto;">
+                    <div class="list-group">
+                        {% for candidate in recent_candidates %}
+                        <a href="{{ url_for('candidate_detail', candidate_id=candidate._id) }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ candidate.full_name }}</h6>
+                                    <small class="text-muted">
+                                        <i class="fas fa-envelope me-1"></i>{{ candidate.email }}
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-{{ 'success' if candidate.passport_status == 'Having' else 'warning' }} mb-1">
+                                        {{ candidate.passport_status }}
+                                    </span>
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ candidate.created_at.strftime('%d/%m/%Y') if candidate.created_at else 'N/A' }}
+                                    </small>
+                                </div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Follow-ups Dashboard -->
+        <div class="col-md-6 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5><i class="fas fa-calendar-check me-2" style="color: #667eea;"></i>Follow-ups Dashboard</h5>
+                </div>
+                <div class="card-body" style="height: 400px; display: flex; flex-direction: column;">
+                    <!-- Follow-up Statistics -->
+                    <div class="row mb-3 text-center">
+                        <div class="col-4">
+                            <div class="p-2 bg-light rounded">
+                                <h3 class="text-info mb-0">{{ today_count|default(0) }}</h3>
+                                <small class="text-muted">Today's</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-2 bg-light rounded">
+                                <h3 class="text-primary mb-0">{{ upcoming_count|default(0) }}</h3>
+                                <small class="text-muted">Upcoming</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-2 bg-light rounded">
+                                <h3 class="text-danger mb-0">{{ missed_count|default(0) }}</h3>
+                                <small class="text-muted">Missed</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Follow-up Tabs -->
+                    <ul class="nav nav-tabs mb-3" id="followupTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="today-tab" data-bs-toggle="tab" data-bs-target="#today" type="button" role="tab">Today's</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="upcoming-tab" data-bs-toggle="tab" data-bs-target="#upcoming" type="button" role="tab">Upcoming</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="missed-tab" data-bs-toggle="tab" data-bs-target="#missed" type="button" role="tab">Missed</button>
+                        </li>
+                    </ul>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content" style="flex: 1; min-height: 0; overflow-y: auto;">
+                        <!-- Today's Follow-ups -->
+                        <div class="tab-pane fade show active" id="today" role="tabpanel">
+                            {% if today_followups %}
+                            <div class="list-group">
+                                {% for fu in today_followups %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">{{ fu.candidate_name }}</h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-clock me-1"></i>{{ fu.follow_up_date.strftime('%H:%M') if fu.follow_up_date else 'N/A' }}
+                                                <span class="badge bg-info ms-2">{{ fu.follow_up_type }}</span>
+                                            </small>
+                                            {% if fu.notes %}
+                                            <p class="mb-0 small text-muted mt-1">{{ fu.notes[:50] }}...</p>
+                                            {% endif %}
+                                        </div>
+                                        <span class="badge bg-{{ 'success' if fu.status == 'Completed' else 'warning' }}">
+                                            {{ fu.status }}
+                                        </span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-calendar-check fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">No follow-ups for today</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Upcoming Follow-ups -->
+                        <div class="tab-pane fade" id="upcoming" role="tabpanel">
+                            {% if upcoming_followups %}
+                            <div class="list-group">
+                                {% for fu in upcoming_followups[:5] %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">{{ fu.candidate_name }}</h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-calendar me-1"></i>{{ fu.follow_up_date.strftime('%d/%m/%Y %H:%M') if fu.follow_up_date else 'N/A' }}
+                                                <span class="badge bg-info ms-2">{{ fu.follow_up_type }}</span>
+                                            </small>
+                                        </div>
+                                        <span class="badge bg-primary">{{ fu.status }}</span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">No upcoming follow-ups</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Missed Follow-ups -->
+                        <div class="tab-pane fade" id="missed" role="tabpanel">
+                            {% if missed_followups %}
+                            <div class="list-group">
+                                {% for fu in missed_followups[:5] %}
+                                <div class="list-group-item list-group-item-danger">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">{{ fu.candidate_name }}</h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-exclamation-triangle me-1"></i>{{ fu.follow_up_date.strftime('%d/%m/%Y %H:%M') if fu.follow_up_date else 'N/A' }}
+                                            </small>
+                                        </div>
+                                        <span class="badge bg-danger">Missed</span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                                <p class="text-muted">No missed follow-ups</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Candidates Detail Modal -->
+<div class="modal fade" id="candidatesModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-users me-2"></i>All Candidates</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Passport Status</th>
+                                <th>Registered</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for candidate in recent_candidates %}
+                            <tr>
+                                <td>{{ candidate.full_name }}</td>
+                                <td>{{ candidate.email }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if candidate.passport_status == 'Having' else 'warning' }}">
+                                        {{ candidate.passport_status }}
+                                    </span>
+                                </td>
+                                <td>{{ candidate.created_at.strftime('%d/%m/%Y') if candidate.created_at else 'N/A' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payments Detail Modal -->
+<div class="modal fade" id="paymentsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-money-bill-wave me-2"></i>Payment Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6>Total Collected</h6>
+                                <h3 class="text-success">LKR {{ "{:,.0f}".format(total_payments - total_remaining) }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6>Total Pending</h6>
+                                <h3 class="text-danger">LKR {{ "{:,.0f}".format(total_remaining) }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <p class="text-muted">Detailed payment information available in candidate details.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Remaining Payments Modal -->
+<div class="modal fade" id="remainingModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-clock me-2"></i>Remaining Payments</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Total Outstanding: LKR {{ "{:,.0f}".format(total_remaining) }}
+                </div>
+                <p class="text-muted">Check individual candidate profiles for payment schedules.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pending Documents Modal -->
+<div class="modal fade" id="documentsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-file-alt me-2"></i>Pending Documents</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Total Pending Documents: {{ pending_docs }}
+                </div>
+                <p class="text-muted">View candidate details for specific document requirements.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Change YouTube video quality
+    function changeVideoQuality(quality) {
+        const videoId = 'IK8EDXB5jVc';
+        const youtubeFrame = document.getElementById('youtubeFrame');
+        youtubeFrame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&vq=${quality}`;
+    }
+
+    // Success Rate Chart (Doughnut)
+    {% set total_candidates_with_docs = 0 %}
+    {% for candidate in all_candidates %}
+        {% if candidate.documents.police_report == 'Having' or
+              candidate.documents.gs_report == 'Having' or
+              candidate.documents.birth_certificate == 'Having' %}
+            {% set total_candidates_with_docs = total_candidates_with_docs + 1 %}
+        {% endif %}
+    {% endfor %}
+    {% set success_count = total_candidates_with_docs %}
+    {% set incomplete_count = total_candidates - success_count %}
+
+    new Chart(document.getElementById('successRateChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Complete', 'Incomplete'],
+            datasets: [{
+                data: [{{ success_count }}, {{ incomplete_count }}],
+                backgroundColor: ['#4BC0C0', '#FF6384'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+    // Monthly Payout Chart (Line)
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const payoutData = new Array(12).fill(0);
+
+    {% for candidate in all_candidates %}
+        {% if candidate.payments and candidate.payments|length > 0 %}
+            {% for payment in candidate.payments %}
+                {% if payment.date %}
+                    const payoutMonth = new Date("{{ payment.date }}").getMonth();
+                    payoutData[payoutMonth] += {{ payment.amount }};
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    {% endfor %}
+
+    new Chart(document.getElementById('monthlyPayoutChart'), {
+        type: 'line',
+        data: {
+            labels: months,
+            datasets: [{
+                label: 'Payout (LKR)',
+                data: payoutData,
+                borderColor: '#36A2EB',
+                backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'LKR ' + value;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Document Completion Chart (Bar)
+    new Chart(document.getElementById('documentCompletionChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Police Report', 'GS Report', 'Birth Certificate'],
+            datasets: [{
+                label: 'Completed',
+                data: [
+                    {{ total_candidates - document_stats.police_report_pending }},
+                    {{ total_candidates - document_stats.gs_report_pending }},
+                    {{ total_candidates - document_stats.birth_certificate_pending }}
+                ],
+                backgroundColor: '#4BC0C0',
+                borderRadius: 8
+            }, {
+                label: 'Pending',
+                data: [
+                    {{ document_stats.police_report_pending }},
+                    {{ document_stats.gs_report_pending }},
+                    {{ document_stats.birth_certificate_pending }}
+                ],
+                backgroundColor: '#FF6384',
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    stacked: true,
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        stepSize: 1
+                    }
+                },
+                x: {
+                    stacked: true,
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // Monthly Registrations Chart
+    const monthlyRegData = new Array(12).fill(0);
+
+    {% for candidate in all_candidates %}
+        {% if candidate.created_at %}
+            const regMonth = new Date("{{ candidate.created_at }}").getMonth();
+            monthlyRegData[regMonth]++;
+        {% endif %}
+    {% endfor %}
+
+    new Chart(document.getElementById('monthlyRegistrationsChart'), {
+        type: 'bar',
+        data: {
+            labels: months,
+            datasets: [{
+                label: 'Registrations',
+                data: monthlyRegData,
+                backgroundColor: 'rgba(102, 126, 234, 0.7)',
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        stepSize: 1
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

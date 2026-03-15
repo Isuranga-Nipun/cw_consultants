@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4">
+        <i class="fas fa-bell me-2" style="color: #667eea;"></i>
+        Section 3: Scheduler and Alerts
+    </h2>
+
+    <!-- Follow-up Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5><i class="fas fa-calendar-day me-2"></i>Today's Follow-ups</h5>
+                    <h2>{{ today_followups|length }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5><i class="fas fa-calendar-alt me-2"></i>Upcoming Follow-ups</h5>
+                    <h2>{{ upcoming_followups|length }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5><i class="fas fa-bell me-2"></i>Unread Notifications</h5>
+                    <h2>{{ notifications|length }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Today's Follow-ups -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5><i class="fas fa-calendar-day me-2"></i> Today's Follow-ups</h5>
+                </div>
+                <div class="card-body">
+                    {% if today_followups %}
+                    <div class="list-group">
+                        {% for fu in today_followups %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ fu.candidate_name }}</h6>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>{{ fu.follow_up_date.strftime('%H:%M') if fu.follow_up_date else 'N/A' }}
+                                        <span class="badge bg-info ms-2">{{ fu.follow_up_type }}</span>
+                                    </small>
+                                    {% if fu.notes %}
+                                    <p class="mb-0 small text-muted mt-1">{{ fu.notes }}</p>
+                                    {% endif %}
+                                </div>
+                                <button class="btn btn-sm btn-success" onclick="updateStatus('{{ fu._id }}', 'Completed')">
+                                    <i class="fas fa-check"></i> Complete
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-calendar-check fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No follow-ups scheduled for today.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-warning">
+                    <h5><i class="fas fa-bell me-2"></i> Notifications</h5>
+                </div>
+                <div class="card-body">
+                    {% if notifications %}
+                    <div class="list-group">
+                        {% for notification in notifications %}
+                        <div class="list-group-item list-group-item-{{ 'info' if notification.notification_type == 'follow_up' else 'success' if notification.notification_type == 'payment_complete' else 'warning' }}">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <p class="mb-1">{{ notification.message }}</p>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>{{ notification.created_at.strftime('%d/%m/%Y %H:%M') }}
+                                    </small>
+                                </div>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="markRead('{{ notification._id }}')">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No new notifications.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Upcoming Follow-ups -->
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-calendar-alt me-2"></i> Upcoming Follow-ups</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Candidate</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Type</th>
+                                    <th>Notes</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for fu in upcoming_followups %}
+                                <tr>
+                                    <td>{{ fu.candidate_name }}</td>
+                                    <td>{{ fu.follow_up_date.strftime('%d/%m/%Y') if fu.follow_up_date else 'N/A' }}</td>
+                                    <td>{{ fu.follow_up_date.strftime('%H:%M') if fu.follow_up_date else 'N/A' }}</td>
+                                    <td><span class="badge bg-info">{{ fu.follow_up_type }}</span></td>
+                                    <td>{{ fu.notes or 'N/A' }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if fu.status == 'Completed' else 'warning' }}">
+                                            {{ fu.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <select class="form-select form-select-sm" onchange="updateStatus('{{ fu._id }}', this.value)">
+                                            <option value="Pending" {{ 'selected' if fu.status == 'Pending' }}>Pending</option>
+                                            <option value="Completed" {{ 'selected' if fu.status == 'Completed' }}>Completed</option>
+                                            <option value="Cancelled" {{ 'selected' if fu.status == 'Cancelled' }}>Cancelled</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Missed Follow-ups Section -->
+    {% if missed_followups %}
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5><i class="fas fa-exclamation-triangle me-2"></i> Missed Follow-ups</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Candidate</th>
+                                    <th>Scheduled Date</th>
+                                    <th>Scheduled Time</th>
+                                    <th>Type</th>
+                                    <th>Notes</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for fu in missed_followups %}
+                                <tr class="table-danger">
+                                    <td>{{ fu.candidate_name }}</td>
+                                    <td>{{ fu.follow_up_date.strftime('%d/%m/%Y') if fu.follow_up_date else 'N/A' }}</td>
+                                    <td>{{ fu.follow_up_date.strftime('%H:%M') if fu.follow_up_date else 'N/A' }}</td>
+                                    <td><span class="badge bg-info">{{ fu.follow_up_type }}</span></td>
+                                    <td>{{ fu.notes or 'N/A' }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-warning" onclick="rescheduleFollowup('{{ fu._id }}')">
+                                            <i class="fas fa-redo-alt me-1"></i> Reschedule
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Reschedule Modal -->
+<div class="modal fade" id="rescheduleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Reschedule Follow-up</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="rescheduleForm">
+                    <div class="mb-3">
+                        <label class="form-label">New Date & Time</label>
+                        <input type="datetime-local" class="form-control" id="rescheduleDate" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmReschedule">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentFollowupId = null;
+
+    function markRead(notificationId) {
+        fetch('/mark_notification_read/' + notificationId)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+    }
+
+    function updateStatus(followupId, status) {
+        fetch('/update_followup_status/' + followupId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({status: status})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    }
+
+    function rescheduleFollowup(followupId) {
+        currentFollowupId = followupId;
+        new bootstrap.Modal(document.getElementById('rescheduleModal')).show();
+    }
+
+    document.getElementById('confirmReschedule').addEventListener('click', function() {
+        const newDate = document.getElementById('rescheduleDate').value;
+        if (!newDate) {
+            alert('Please select a date and time');
+            return;
+        }
+
+        fetch('/update_followup_date/' + currentFollowupId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({follow_up_date: newDate})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    });
+</script>
+{% endblock %}

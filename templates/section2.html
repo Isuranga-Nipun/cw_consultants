@@ -1,0 +1,408 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4">
+        <i class="fas fa-chart-line me-2" style="color: #667eea;"></i>
+        Section 2: Follow-ups and Statistics
+    </h2>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5>Total Candidates</h5>
+                    <h2>{{ stats.total_candidates }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5>Total Payments</h5>
+                    <h2>LKR {{ "{:,.0f}".format(stats.payment_stats.total_collected + stats.payment_stats.total_remaining) }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5>Pending Payments</h5>
+                    <h2>LKR {{ "{:,.0f}".format(stats.payment_stats.total_remaining) }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5>Pending Docs</h5>
+                    <h2>{{ stats.document_stats.police_report_pending + stats.document_stats.gs_report_pending + stats.document_stats.birth_certificate_pending }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Charts -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-venus-mars me-2"></i>Gender Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="genderChart" style="height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-briefcase me-2"></i>Job Title Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="jobChart" style="height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-passport me-2"></i>Passport Status</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="passportChart" style="height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-file-alt me-2"></i>Document Status</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="documentChart" style="height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Registrations Chart -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-calendar-alt me-2"></i>Monthly Registrations</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyChart" style="height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Progress Chart -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-pie me-2"></i>Payment Progress</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="paymentChart" style="height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Candidates List -->
+    <div class="card">
+        <div class="card-header">
+            <h5><i class="fas fa-list me-2"></i>Candidates List</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Contact</th>
+                            <th>Passport Status</th>
+                            <th>Total Payment</th>
+                            <th>Remaining</th>
+                            <th>Pending Documents</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for candidate in candidates %}
+                        <tr>
+                            <td>{{ candidate.full_name }}</td>
+                            <td>{{ candidate.mobile_no }}<br><small>{{ candidate.email }}</small></td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if candidate.passport_status == 'Having' else 'warning' }}">
+                                    {{ candidate.passport_status }}
+                                </span>
+                            </td>
+                            <td>LKR {{ "{:,.0f}".format(candidate.total_payment) }}</td>
+                            <td>
+                                {% if candidate.remaining_payment > 0 %}
+                                <span class="text-danger">LKR {{ "{:,.0f}".format(candidate.remaining_payment) }}</span>
+                                {% else %}
+                                <span class="text-success">Completed</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if candidate.pending_documents %}
+                                <span class="badge bg-warning">{{ candidate.pending_documents|length }}</span>
+                                {% else %}
+                                <span class="badge bg-success">None</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('candidate_detail', candidate_id=candidate._id) }}" class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Gender Distribution Chart (Bar Chart)
+    new Chart(document.getElementById('genderChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Male', 'Female'],
+            datasets: [{
+                label: 'Number of Candidates',
+                data: [{{ stats.gender_distribution.male }}, {{ stats.gender_distribution.female }}],
+                backgroundColor: ['#36A2EB', '#FF6384'],
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        display: false
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // Job Title Distribution Chart (Bar Chart)
+    new Chart(document.getElementById('jobChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Skilled', 'Non-skilled'],
+            datasets: [{
+                label: 'Number of Candidates',
+                data: [{{ stats.job_title_distribution.skilled }}, {{ stats.job_title_distribution.non_skilled }}],
+                backgroundColor: ['#4BC0C0', '#FF9F40'],
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        display: false
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // Passport Status Chart (Bar Chart)
+    new Chart(document.getElementById('passportChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Having', 'Pending', 'Need Apply'],
+            datasets: [{
+                label: 'Number of Candidates',
+                data: [{{ stats.passport_status.having }}, {{ stats.passport_status.pending }}, {{ stats.passport_status.need_apply }}],
+                backgroundColor: ['#36A2EB', '#FFCE56', '#FF6384'],
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        display: false
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // Document Status Chart (Bar Chart with Other category)
+    new Chart(document.getElementById('documentChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Police Report', 'GS Report', 'Birth Certificate', 'Other'],
+            datasets: [{
+                label: 'Pending Documents',
+                data: [
+                    {{ stats.document_stats.police_report_pending }},
+                    {{ stats.document_stats.gs_report_pending }},
+                    {{ stats.document_stats.birth_certificate_pending }},
+                    0  // Other documents count - you can add this to your stats
+                ],
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        display: false
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // Monthly Registrations Chart
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthlyData = new Array(12).fill(0);
+
+    {% for month in stats.monthly_registrations %}
+        monthlyData[{{ month._id }} - 1] = {{ month.count }};
+    {% endfor %}
+
+    new Chart(document.getElementById('monthlyChart'), {
+        type: 'line',
+        data: {
+            labels: months,
+            datasets: [{
+                label: 'Registrations',
+                data: monthlyData,
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#667eea',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        display: true,
+                        color: 'rgba(0,0,0,0.05)'
+                    },
+                    ticks: {
+                        stepSize: 1
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // Payment Progress Chart (Doughnut)
+    new Chart(document.getElementById('paymentChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Collected', 'Remaining'],
+            datasets: [{
+                data: [{{ stats.payment_stats.total_collected }}, {{ stats.payment_stats.total_remaining }}],
+                backgroundColor: ['#4BC0C0', '#FF6384'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            },
+            cutout: '60%'
+        }
+    });
+</script>
+{% endblock %}
